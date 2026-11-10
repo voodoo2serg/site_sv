@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.open-next/
+dist/
+.wrangler/
+.env*
+!.env.example
+.local-data/
+*.tsbuildinfo
+
+.security-test-*/
+*.tmp

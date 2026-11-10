@@ -1,0 +1,189 @@
+[
+  {
+    "id": "gazprom-media",
+    "name": "Газпром-Медиа",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/gazprom-media.png",
+    "web": "logos/mono/gazprom-media.png",
+    "source_page": "https://pro.gazprom-media.com/",
+    "source_file": "https://pro.gazprom-media.com/images/logo/04_logo.png",
+    "note": "Официальный вариант со страницы спецпроекта; отличается от логотипа основного сайта."
+  },
+  {
+    "id": "metalloinvest",
+    "name": "Металлоинвест",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/metalloinvest.svg",
+    "web": "logos/mono/metalloinvest.png",
+    "source_page": "https://vmeste.metalloinvest.com/",
+    "source_file": "https://vmeste.metalloinvest.com/media/1x2jvlky/logo-metalloinvest.svg?v=1dc4d9e3c6cb140",
+    "note": "SVG из футера официальной программы «Вместе!»."
+  },
+  {
+    "id": "raso",
+    "name": "РАСО",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/raso.svg",
+    "web": "logos/mono/raso.png",
+    "source_page": "https://raso.ru/",
+    "source_file": "https://static.tildacdn.com/tild6261-3164-4565-b064-363131626639/new_logo_raso_36.svg",
+    "note": "Текущая опубликованная юбилейная версия с числом 35. Геометрия не изменена."
+  },
+  {
+    "id": "ispras",
+    "name": "ИСП РАН",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/ispras.jpg",
+    "web": "logos/mono/ispras.png",
+    "source_page": "https://www.ispras.ru/style/",
+    "source_file": "https://www.ispras.ru/downloads/style/logo_ispras_ru.jpg",
+    "note": "Из официального раздела фирменного стиля. В комплекте также векторный PDF."
+  },
+  {
+    "id": "rudn",
+    "name": "РУДН",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/rudn.svg",
+    "web": "logos/mono/rudn.png",
+    "source_page": "https://www.rudn.ru/",
+    "source_file": "https://www.rudn.ru/",
+    "note": "Inline SVG из шапки официальной главной. Опубликованный вариант RUDN University."
+  },
+  {
+    "id": "ras",
+    "name": "РАН",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/ras.png",
+    "web": "logos/mono/ras.png",
+    "source_page": "https://www.ras.ru/",
+    "source_file": "https://www.ras.ru/images/logo_ru.png",
+    "note": "Знак с официального портала РАН."
+  },
+  {
+    "id": "mgimo",
+    "name": "МГИМО",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/mgimo.pdf",
+    "web": "logos/mono/mgimo.png",
+    "source_page": "https://endowment.mgimo.ru/",
+    "source_file": "https://endowment.mgimo.ru/upload/ckeditor/files/MGIMO_eng_web.pdf",
+    "note": "Логотип университета с обложки официального издания 2024, PDF-страница 1. Векторная вырезка и монохромная производная; не знак медиацентра или ассоциации выпускников."
+  },
+  {
+    "id": "iyt",
+    "name": "IYT",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/iyt.png",
+    "web": "logos/mono/iyt.png",
+    "source_page": "https://www.iytworld.com/",
+    "source_file": "https://www.iytworld.com/wp-content/themes/yootheme-child/images/logo.png",
+    "note": "Из шапки официального сайта."
+  },
+  {
+    "id": "xwaters",
+    "name": "X-WATERS",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/xwaters.png",
+    "web": "logos/mono/xwaters.png",
+    "source_page": "https://x-waters.com/",
+    "source_file": "https://x-waters.com/wp-content/themes/x-waters/images/xw_gradient-18.png",
+    "note": "Из шапки официального сайта."
+  },
+  {
+    "id": "rowing-russia",
+    "name": "Федерация гребного спорта России",
+    "kind": "official_logo",
+    "status": "ready",
+    "original": "logos/original/rowing-russia.svg",
+    "web": "logos/mono/rowing-russia.png",
+    "source_page": "https://rowingrussia.ru/",
+    "source_file": "https://rowingrussia.ru/img/logo.svg",
+    "note": "Полный знак федерации как дополнительный вариант."
+  },
+  {
+    "id": "rowing-sport",
+    "name": "Академическая гребля",
+    "kind": "official_sport_icon",
+    "status": "ready",
+    "original": "logos/original/rowing-sport.svg",
+    "web": "logos/mono/rowing-sport.png",
+    "source_page": "https://rowingrussia.ru/",
+    "source_file": "https://rowingrussia.ru/img/academ-ic.svg",
+    "note": "Официальная пиктограмма дисциплины с сайта федерации; для раздела интересов."
+  },
+  {
+    "id": "solo-pr",
+    "name": "Соло-PR",
+    "kind": "text_label",
+    "status": "text_only",
+    "original": "",
+    "web": "labels/solo-pr.svg",
+    "source_page": "",
+    "source_file": "",
+    "note": "На solo-pr.ru опубликована парковка домена; официальный знак не извлечён."
+  },
+  {
+    "id": "raga",
+    "name": "RAGA",
+    "kind": "text_label",
+    "status": "text_only",
+    "original": "",
+    "web": "labels/raga.svg",
+    "source_page": "",
+    "source_file": "",
+    "note": "Типографическое название продукта; логотип не заявляется."
+  },
+  {
+    "id": "worldview",
+    "name": "Картина мира",
+    "kind": "text_label",
+    "status": "text_only",
+    "original": "",
+    "web": "labels/worldview.svg",
+    "source_page": "",
+    "source_file": "",
+    "note": "Типографическое название продукта; логотип не заявляется."
+  },
+  {
+    "id": "bigdata",
+    "name": "Журналистика больших данных",
+    "kind": "text_label",
+    "status": "text_only",
+    "original": "",
+    "web": "labels/bigdata.svg",
+    "source_page": "",
+    "source_file": "",
+    "note": "Типографическое название образовательной программы."
+  },
+  {
+    "id": "kayak",
+    "name": "Байдарки",
+    "kind": "text_label",
+    "status": "text_only",
+    "original": "",
+    "web": "labels/kayak.svg",
+    "source_page": "",
+    "source_file": "",
+    "note": "Типографическое название интереса."
+  },
+  {
+    "id": "ctc-media",
+    "name": "СТС Медиа",
+    "kind": "official_logo",
+    "status": "blocked",
+    "original": "",
+    "web": "",
+    "source_page": "https://ctc.media/guidebooks",
+    "source_file": "https://ctc.media/guidebooks/logos/ctcmedia.svg",
+    "note": "Официальная страница и файл обнаружены. Сайт отклонил доступ с сообщением о проверке ботов. Файл в комплект не добавлен, знак не перерисован."
+  }
+]

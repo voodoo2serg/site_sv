@@ -1,0 +1,1 @@
+{"name":"sergey-vodopetov","main":".open-next/worker.js","compatibility_date":"2026-11-01","compatibility_flags":["nodejs_compat"],"assets":{"directory":".open-next/assets","binding":"ASSETS"},"r2_buckets":[{"binding":"BUCKET","bucket_name":"vodopetov-content"}],"vars":{"OWNER_PRIVATE_EDITOR":"true"}}
