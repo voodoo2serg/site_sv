@@ -10,7 +10,8 @@
     "test": "node scripts/test-security.mjs",
     "build:vps": "next build",
     "start:vps": "next start --hostname 127.0.0.1 --port 3000",
-    "test:vps": "node scripts/test-vps.mjs"
+    "test:vps": "node scripts/test-vps.mjs",
+    "test:leads": "node scripts/test-utm-leads.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
