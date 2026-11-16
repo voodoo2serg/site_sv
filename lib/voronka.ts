@@ -72,7 +72,7 @@ export async function deliverSiteLead(input:LeadInput): Promise<LeadDeliveryResu
  }
  const payload=leadPayload(leadId,input,env.projectId);
  const body=canonicalJson(payload);
- const timestamp=String(Date.now());
+ const timestamp=String(Math.floor(Date.now()/1000));
  const signature=signPayload(env.secret,body,timestamp);
  const sigHeader='sha256='+signature;
  try{
