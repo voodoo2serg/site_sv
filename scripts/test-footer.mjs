@@ -3,6 +3,11 @@ import {readFile,stat} from 'node:fs/promises';
 
 const shell=await readFile('components/Shell.tsx','utf8');
 const css=await readFile('app/globals.css','utf8');
+const siteContent=await readFile('lib/content.ts','utf8');
+assert.ok(siteContent.includes("|| 'https://vodopetov.ru'"),'Canonical site fallback must use vodopetov.ru');
+assert.ok(!siteContent.includes('sergey-vodopetov.workspace-973399.chatgpt.site'),'Remove stale site URL');
+const homepage=await readFile('app/page.tsx','utf8');
+assert.ok(homepage.includes('className="portrait-link" href="/about/"'),'Home portrait must remain a local site link');
 
 for(const url of [
   'https://t.me/prvodo',
@@ -20,4 +25,4 @@ for(const file of ['public/assets/projects/solo-pr-mark.svg','public/assets/proj
   assert.ok(info.size>1000,'Expected original brand image: '+file);
 }
 assert.ok(css.includes('.footer-socials')&&css.includes('.footer-projects'),'Footer responsive styles are missing');
-console.log('PASS: Footer contact channels, ordering, authentic project marks and no contact form.');
+console.log('PASS: Footer and canonical vodopetov.ru links verified.');
