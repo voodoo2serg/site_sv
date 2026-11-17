@@ -1,4 +1,5 @@
 import 'server-only';
+import {validEditorOidcSession} from './editor-oidc';
 import {headers,cookies} from 'next/headers';
 import {runtime,SITE_URL} from './content';
 const enc=new TextEncoder();
@@ -6,6 +7,7 @@ async function secret(){const env=await runtime();return env.EDITOR_PASSWORD||pr
 async function sign(payload:string,key:string){const cryptoKey=await crypto.subtle.importKey('raw',enc.encode(key),{name:'HMAC',hash:'SHA-256'},false,['sign']);return Buffer.from(await crypto.subtle.sign('HMAC',cryptoKey,enc.encode(payload))).toString('base64url');}
 export async function issueSession(password:string){const key=await secret();if(!key||key.length<24)return null;const a=await sign(password,key),b=await sign(key,key);if(a!==b)return null;const expiry=String(Date.now()+8*60*60*1000);return expiry+'.'+await sign(expiry,key);}
 export async function isEditor(claim=false){
+ if(await validEditorOidcSession((await cookies()).get('editor_oidc_session')?.value))return true;
  const h=await headers();const env=await runtime();const id=h.get('oai-authenticated-user-id');
  if(process.env.NODE_ENV==='development'&&process.env.EDITOR_PREVIEW==='true'&&/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(h.get('host')||''))return true;
  if(env.BUCKET&&id){
