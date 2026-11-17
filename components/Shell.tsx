@@ -50,6 +50,6 @@ export function Footer({email='serg@vodopetov.ru'}:{email?:string}) {
   </footer>;
 }
 
-export function Rich({html,className=''}:{html:string}) {
+export function Rich({html,className=''}:{html:string;className?:string}) {
   return <div className={'rich '+className} dangerouslySetInnerHTML={{__html:html}}/>;
 }
