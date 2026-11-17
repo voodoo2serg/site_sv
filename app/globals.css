@@ -46,3 +46,17 @@
 .signal-editor-apps a:hover,.signal-editor-apps a:focus-visible{background:#f1efed}
 .signal-editor-apps a span{display:grid;place-items:center;width:42px;height:42px;background:#f1efed;border-radius:12px;font-size:13px;font-weight:700}
 .signal-editor-launcher-panel small{display:block;margin-top:12px;color:#777;line-height:1.5}
+
+
+/* Contact footer: direct channels first, email second, project marks below. */
+.footer-contact{width:min(460px,100%)}
+.footer-socials{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:6px 0 22px}
+.footer-socials a{display:inline-flex;align-items:center;gap:9px;min-height:43px;padding:8px 13px;border:1px solid var(--line);border-radius:9px;text-decoration:none;font-size:13px;color:inherit;transition:background-color .2s,border-color .2s}
+.footer-socials a:hover,.footer-socials a:focus-visible{background:#f0f0ea;border-color:#a6a99e}
+.footer-socials svg{width:23px;height:23px;flex:none}
+.max-symbol{font-size:11px;font-weight:800;letter-spacing:-.07em;color:#fff;background:#24282c;border-radius:8px;padding:7px 5px;line-height:1}
+.footer-projects{display:flex;align-items:center;gap:26px;flex-wrap:wrap;margin-top:25px}
+.footer-project{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font-size:14px;font-weight:500}
+.footer-project img{width:60px;height:58px;object-fit:contain;object-position:center}
+.footer-project:hover span,.footer-project:focus-visible span{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:420px){.footer-socials{gap:8px}.footer-socials a{padding:8px 10px}.footer-projects{gap:18px}.footer-project img{width:52px;height:50px}}
