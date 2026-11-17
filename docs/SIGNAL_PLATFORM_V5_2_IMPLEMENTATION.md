@@ -24,3 +24,7 @@
 3. Не писать чувствительные данные в RAGA/Umami; asset-originals в Media Registry; consent and financial truth только в Voronka.
 4. Сохранить независимое исполнение сервисов при временной недоступности Signal. Перед опасными миграциями backup+restore и rollback.
 5. Обновить канонический status registry в `solo_pr/docs/signal/` вместе с изменением, а не через месяцы после деплоя.
+
+## Единая регистрация, восстановление и SSO — AUTH-201…210
+
+**[Актуальное к исполнению ТЗ Keycloak v5.3](https://github.com/voodoo2serg/solo_pr/blob/main/docs/signal/UNIFIED_IDENTITY_AND_ACCESS_V5_3.md)**. Для данного репозитория применяются его AUTH-тикеты из общей матрицы. Единая регистрация и сброс пароля живут в Keycloak, а не копируются в сервисы. Локальные роли и legacy аккаунты связывать через проверенный `issuer + sub`, без выдачи owner по email. Восстановление доступа владельца `serg@vodopetov.ru` — [AUTH-202](https://github.com/voodoo2serg/solo_pr/issues/21), с подтверждением личности и без master-password. **Не считать готовым до E2E AUTH-210.**
