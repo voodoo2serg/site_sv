@@ -25,7 +25,7 @@ export function Footer({email='serg@vodopetov.ru'}:{email?:string}) {
             <span className="footer-social-label">Telegram</span>
           </a>
           <a href={maxUrl} target="_blank" rel="noopener noreferrer" aria-label="Канал в MAX" title="MAX">
-            <span className="max-symbol" aria-hidden="true">MAX</span>
+            <img className="max-icon" src="https://max.ru/s/img/big-logo.png" alt="" width={25} height={25} />
             <span className="footer-social-label">MAX</span>
           </a>
         </div>
