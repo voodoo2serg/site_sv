@@ -1,0 +1,26 @@
+name: Editor SSO checks
+on:
+  push:
+    paths:
+      - 'lib/editor-oidc.ts'
+      - 'lib/auth.ts'
+      - 'components/Login.tsx'
+      - 'app/edit/page.tsx'
+      - 'app/api/editor-oidc/**'
+      - '.github/workflows/editor-oidc-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run test
