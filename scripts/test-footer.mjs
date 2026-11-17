@@ -5,7 +5,7 @@ const shell=await readFile('components/Shell.tsx','utf8');
 const css=await readFile('app/globals.css','utf8');
 const siteContent=await readFile('lib/content.ts','utf8');
 assert.ok(siteContent.includes("|| 'https://vodopetov.ru'"),'Canonical site fallback must use vodopetov.ru');
-assert.ok(!siteContent.includes('sergey-vodopetov.workspace-973399.chatgpt.site'),'Remove stale site URL');
+assert.ok(siteContent.includes("configuredSiteUrl.includes('sergey-vodopetov.workspace-973399.chatgpt.site') ? 'https://vodopetov.ru'"),'Normalize old deployment URL');
 const homepage=await readFile('app/page.tsx','utf8');
 assert.ok(homepage.includes('className="portrait-link" href="/about/"'),'Home portrait must remain a local site link');
 
