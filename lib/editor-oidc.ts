@@ -141,5 +141,13 @@ export async function validEditorOidcSession(session:string|undefined) {
   if(parts.length!==3)return false;
   const [sub,expires,sig]=parts;
   if(sub!==cfg.ownerSub||!Number.isFinite(Number(expires))||Number(expires)<=Date.now())return false;
-  return validSignature(cfg.secret,sub+'.'+expires,sig);
+  if (!(await validSignature(cfg.secret,sub+'.'+expires,sig))) return false;
+  // Enforce revocation on every protected editor request, not just at SSO login.
+  // If SIGNAL is unavailable, SSO access fails closed; legacy login stays intact.
+  try {
+    await verifySignalGrant(cfg, sub);
+    return true;
+  } catch {
+    return false;
+  }
 }
