@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'components/Shell.tsx'
+      - 'lib/content.ts'
+      - 'app/page.tsx'
+      - 'app/[slug]/page.tsx'
       - 'app/globals.css'
       - 'public/assets/projects/**'
       - 'scripts/test-footer.mjs'
