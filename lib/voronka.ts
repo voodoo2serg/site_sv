@@ -11,6 +11,7 @@ export type LeadInput={
  adsConsent:boolean;
  utm:UtmAttribution|null;
  landingPath?:string;
+ submissionId?:string;
 };
 
 export type LeadDeliveryResult={ok:boolean;leadId:string;voronka?:'sent'|'skipped'|'misconfigured';error?:string};
@@ -65,7 +66,7 @@ function leadPayload(leadId:string,input:LeadInput,projectId:string){
 }
 
 export async function deliverSiteLead(input:LeadInput): Promise<LeadDeliveryResult>{
- const leadId=randomUUID();
+ const leadId=input.submissionId||randomUUID();
  const env=voronkaEnv();
  if(!env.enabled||!env.url||!env.secret){
   return {ok:true,leadId,voronka:'misconfigured'};
