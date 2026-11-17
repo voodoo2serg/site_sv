@@ -10,7 +10,7 @@ export async function GET(req:NextRequest){
     const session=await completeEditorOidc(code,state,sealed);
     const response=NextResponse.redirect(new URL('/edit/',req.url),303);
     response.cookies.set('editor_oidc_session',session,{httpOnly:true,secure:true,sameSite:'lax',maxAge:8*3600,path:'/'});
-    response.cookies.delete('editor_oidc_state');
+    response.cookies.set('editor_oidc_state','',{httpOnly:true,secure:true,sameSite:'lax',maxAge:0,path:'/api/editor-oidc'});
     response.headers.set('Cache-Control','no-store');
     return response;
   }catch{
