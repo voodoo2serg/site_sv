@@ -7,6 +7,7 @@ on:
       - 'app/globals.css'
       - 'public/assets/projects/**'
       - 'scripts/test-footer.mjs'
+      - 'deploy/deploy-site-sv-vps.sh'
       - '.github/workflows/footer-checks.yml'
   workflow_dispatch:
 permissions:
@@ -24,6 +25,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify footer structure, links and project assets
         run: node scripts/test-footer.mjs
+      - name: Validate deploy script syntax
+        run: bash -n deploy/deploy-site-sv-vps.sh
       - name: Typecheck
         run: npm run check
       - name: Build Next.js for VPS
