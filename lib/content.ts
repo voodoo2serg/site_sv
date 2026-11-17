@@ -4,7 +4,8 @@ import {applyEditorialUpdate} from './editorial';
 import sanitizeHtml from 'sanitize-html';
 export type Content = typeof defaults;
 export type Section = Content['pages']['pr'];
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://vodopetov.ru';
+const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vodopetov.ru';
+export const SITE_URL = configuredSiteUrl.includes('sergey-vodopetov.workspace-973399.chatgpt.site') ? 'https://vodopetov.ru' : configuredSiteUrl;
 export const slugs = ['pr','digital','science','interests'] as const;
 export type Slug = typeof slugs[number];
 export async function runtime() {
