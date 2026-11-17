@@ -26,12 +26,6 @@ before="$(as_site git rev-parse HEAD)"
 branch="$(as_site git symbolic-ref --quiet --short HEAD || true)"
 as_site git fetch origin main
 target="$(as_site git rev-parse origin/main)"
-# A local hotfix is safe to carry across a branch switch only if upstream
-# has NOT modified that file between the current checkout and target main.
-if [ -n "$tracked_changes" ] && ! as_site git diff --quiet "$before" "$target" -- lib/voronka.ts; then
-  echo "ERROR: upstream also changed lib/voronka.ts; manual reconciliation required" >&2
-  exit 3
-fi
 if [ "$before" = "$target" ]; then
   echo "Source already at target $target; rebuilding and verifying anyway."
 fi
@@ -45,6 +39,17 @@ if [ -n "$tracked_changes" ]; then
   as_site git diff --binary -- lib/voronka.ts > "$backup/voronka.patch"
   test -s "$backup/voronka.patch" || { echo "ERROR: failed to save local hotfix patch" >&2; exit 3; }
   echo "Local lib/voronka.ts saved in private deployment backup."
+  # Reconcile the server's hotfix against GitHub using the common HEAD version.
+  # The merge is PREVIEWED into /root; conflicts abort before any production writes.
+  as_site git show "$before:lib/voronka.ts" > "$backup/voronka-base.ts"
+  as_site git show "$target:lib/voronka.ts" > "$backup/voronka-upstream.ts"
+  if git merge-file -p "$backup/voronka.ts" "$backup/voronka-base.ts" "$backup/voronka-upstream.ts" > "$backup/voronka-merged.ts"; then
+    echo "PASS: 3-way merge of local Voronka adjustment and upstream changes"
+  else
+    echo "ERROR: Voronka hotfix has a real 3-way merge conflict; no production files changed." >&2
+    echo "Conflict analysis kept in $backup/voronka-merged.ts (root-only)." >&2
+    exit 3
+  fi
 fi
 systemctl is-active --quiet "$SERVICE" || { echo "ERROR: $SERVICE is not active before deploy" >&2; exit 3; }
 echo "Starting scoped deploy $before -> $target; rollback metadata in $backup"
@@ -54,9 +59,14 @@ recovery() {
   echo "ERROR: deploy failed with $original_status; restoring previous source and service" >&2
   systemctl stop "$SERVICE" || true
   if [ -n "$branch" ]; then
-    as_site git switch "$branch" || as_site git switch --detach "$before" || true
+    as_site git switch --force "$branch" || as_site git switch --detach --force "$before" || true
   else
-    as_site git switch --detach "$before" || true
+    as_site git switch --detach --force "$before" || true
+  fi
+  if [ -f "$backup/voronka.ts" ]; then
+    cp "$backup/voronka.ts" lib/voronka.ts
+    chown site-sv:site-sv lib/voronka.ts
+    chmod 644 lib/voronka.ts
   fi
   as_site npm ci --no-audit --no-fund || true
   as_site env NEXT_PUBLIC_SITE_URL=https://vodopetov.ru npm run build:vps || true
@@ -66,11 +76,14 @@ recovery() {
 }
 trap recovery ERR
 # Site is single-process, uses persisted /var/lib/site-sv for editable content.
-# Git keeps the existing lib/voronka.ts local edit because target matches the
-# previous checked-out version of that file. Switch before stopping the site.
-as_site git switch --detach "$target"
+# Preserve original file first, then switch the *tracked* code to the verified
+# revision. Force is scoped to this checkout after backing up its sole local edit.
+as_site git switch --detach --force "$target"
 if [ -n "$tracked_changes" ]; then
-  cmp -s lib/voronka.ts "$backup/voronka.ts" || { echo "ERROR: local hotfix was not preserved" >&2; false; }
+  cp "$backup/voronka-merged.ts" lib/voronka.ts
+  chown site-sv:site-sv lib/voronka.ts
+  chmod 644 lib/voronka.ts
+  cmp -s lib/voronka.ts "$backup/voronka-merged.ts" || { echo "ERROR: merged hotfix restore failed" >&2; false; }
 fi
 systemctl stop "$SERVICE"
 as_site npm ci --no-audit --no-fund
