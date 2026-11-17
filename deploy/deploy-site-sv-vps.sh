@@ -11,14 +11,27 @@ test -d "$APP/.git" || { echo "ERROR: no git checkout at $APP" >&2; exit 2; }
 test -f /etc/site-sv.env || { echo "ERROR: missing /etc/site-sv.env" >&2; exit 2; }
 cd "$APP"
 as_site() { runuser -u site-sv -- "$@"; }
-if [ -n "$(as_site git status --porcelain --untracked-files=no)" ]; then
-  echo "ERROR: local tracked edits exist; refusing to overwrite" >&2
+# Allow the known VPS-only adjustment in lib/voronka.ts, but no other tracked edits.
+# Never discard or commit server-specific changes.
+tracked_changes="$(as_site git status --porcelain --untracked-files=no)"
+if [ -n "$tracked_changes" ] && [ "$tracked_changes" != ' M lib/voronka.ts' ]; then
+  echo "ERROR: unexpected tracked edits; refusing deploy (use git status --short to inspect)" >&2
+  exit 3
+fi
+if [ -n "$(as_site git diff --cached --name-only)" ]; then
+  echo "ERROR: staged changes found; refusing deploy" >&2
   exit 3
 fi
 before="$(as_site git rev-parse HEAD)"
 branch="$(as_site git symbolic-ref --quiet --short HEAD || true)"
 as_site git fetch origin main
 target="$(as_site git rev-parse origin/main)"
+# A local hotfix is safe to carry across a branch switch only if upstream
+# has NOT modified that file between the current checkout and target main.
+if [ -n "$tracked_changes" ] && ! as_site git diff --quiet "$before" "$target" -- lib/voronka.ts; then
+  echo "ERROR: upstream also changed lib/voronka.ts; manual reconciliation required" >&2
+  exit 3
+fi
 if [ "$before" = "$target" ]; then
   echo "Source already at target $target; rebuilding and verifying anyway."
 fi
@@ -47,8 +60,13 @@ recovery() {
 }
 trap recovery ERR
 # Site is single-process, uses persisted /var/lib/site-sv for editable content.
-systemctl stop "$SERVICE"
+# Git keeps the existing lib/voronka.ts local edit because target matches the
+# previous checked-out version of that file. Switch before stopping the site.
 as_site git switch --detach "$target"
+if [ -n "$tracked_changes" ]; then
+  cmp -s lib/voronka.ts "$backup/voronka.ts" || { echo "ERROR: local hotfix was not preserved" >&2; false; }
+fi
+systemctl stop "$SERVICE"
 as_site npm ci --no-audit --no-fund
 as_site node scripts/test-footer.mjs
 as_site npm run check
