@@ -40,6 +40,12 @@ mkdir -p "$backup"
 printf '%s\n' "$before" > "$backup/previous_sha"
 printf '%s\n' "$branch" > "$backup/previous_branch"
 printf '%s\n' "$target" > "$backup/target_sha"
+if [ -n "$tracked_changes" ]; then
+  cp -p lib/voronka.ts "$backup/voronka.ts"
+  as_site git diff --binary -- lib/voronka.ts > "$backup/voronka.patch"
+  test -s "$backup/voronka.patch" || { echo "ERROR: failed to save local hotfix patch" >&2; exit 3; }
+  echo "Local lib/voronka.ts saved in private deployment backup."
+fi
 systemctl is-active --quiet "$SERVICE" || { echo "ERROR: $SERVICE is not active before deploy" >&2; exit 3; }
 echo "Starting scoped deploy $before -> $target; rollback metadata in $backup"
 recovery() {
