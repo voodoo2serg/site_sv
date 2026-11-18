@@ -2,6 +2,9 @@
 
 const entries=[
  {id:'solo',name:'Соло-Пиар',mark:'СП',site:'https://solo-pr.ru/',admin:'https://cms.solo-pr.ru/admin'},
+ {id:'raga',name:'РАГА',mark:'РА',site:'https://raga.vodopetov.ru/'},
+ {id:'raga7',name:'Кабинет RAGA7',mark:'R7',site:'https://raga7.vodopetov.ru/'},
+ {id:'wited',name:'wi-ted',mark:'WT',site:'https://wi-ted.solo-pr.ru/'},
  {id:'signal',name:'СИГНАЛ',mark:'СИ',site:'https://signal.vodopetov.ru/'},
  {id:'crm',name:'CRM',mark:'CRM',site:'https://crm.solo-pr.ru/crm/',admin:'https://crm.solo-pr.ru/crm/'},
  {id:'lms',name:'Обучение',mark:'LMS',site:'https://lms.solo-pr.ru/'},
