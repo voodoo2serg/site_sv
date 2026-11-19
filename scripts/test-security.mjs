@@ -31,11 +31,35 @@ const next=await saveContent(dirty,1);assert.equal(next.version,2);assert.equal(
 await Promise.allSettled([saveContent(defaults,2),saveContent(defaults,2)]).then(r=>{assert.equal(r.filter(x=>x.status==='fulfilled').length,1,'R2 compare-and-swap prevents lost updates');});
 globalThis.testEnv.EDITOR_PASSWORD='a-test-only-long-password-12345';
 assert.equal(await issueSession('incorrect'),null);const token=await issueSession(globalThis.testEnv.EDITOR_PASSWORD);assert.ok(token);globalThis.testHeaders=new Headers();globalThis.testCookies.set('editor_session',{value:token});assert.equal(await isEditor(),true);globalThis.testCookies.set('editor_session',{value:token+'tampered'});assert.equal(await isEditor(),false);
+// AUTH-208: with full OIDC env + cutover, password path must not remain a silent bypass.
+process.env.EDITOR_OIDC_ISSUER='https://auth.solo-pr.ru/realms/solo-pr';
+process.env.EDITOR_OIDC_CLIENT_ID='site-sv-editor';
+process.env.EDITOR_OIDC_REDIRECT_URI='https://vodopetov.ru/api/editor-oidc/callback';
+process.env.EDITOR_OIDC_OWNER_SUB='28a91eae-4775-4988-838a-b6ff5fa9b3bd';
+process.env.EDITOR_OIDC_SESSION_SECRET='z'.repeat(32);
+process.env.SIGNAL_ACCESS_RESOLVE_URL='https://signal.example/api/v1/access/resolve';
+process.env.SIGNAL_ACCESS_SIGNING_KEY='w'.repeat(32);
+process.env.EDITOR_OIDC_CUTOVER='1';
+delete process.env.EDITOR_OIDC_BREAK_GLASS;
+globalThis.testCookies=new Map();
+globalThis.testCookies.set('editor_session',{value:token});
+assert.equal(await isEditor(),false,'cutover rejects legacy password cookie');
+assert.equal(await issueSession(globalThis.testEnv.EDITOR_PASSWORD),null,'cutover rejects password issue');
+process.env.EDITOR_OIDC_BREAK_GLASS='1';
+const glass=await issueSession(globalThis.testEnv.EDITOR_PASSWORD);assert.ok(glass,'break-glass re-enables password');
+globalThis.testCookies.set('editor_session',{value:glass});assert.equal(await isEditor(),true);
+// P1: cutover alone (OIDC wiped) still blocks password without break-glass.
+delete process.env.EDITOR_OIDC_BREAK_GLASS;
+for (const k of ['EDITOR_OIDC_ISSUER','EDITOR_OIDC_CLIENT_ID','EDITOR_OIDC_REDIRECT_URI','EDITOR_OIDC_OWNER_SUB','EDITOR_OIDC_SESSION_SECRET','SIGNAL_ACCESS_RESOLVE_URL','SIGNAL_ACCESS_SIGNING_KEY']) delete process.env[k];
+process.env.EDITOR_OIDC_CUTOVER='1';
+assert.equal(await issueSession(globalThis.testEnv.EDITOR_PASSWORD),null,'cutover without OIDC still blocks password');
+globalThis.testCookies.set('editor_session',{value:glass});assert.equal(await isEditor(),false);
+delete process.env.EDITOR_OIDC_CUTOVER;
 const oldContent=structuredClone(defaults);delete oldContent.contentRevision;oldContent.pages.pr.intro='<p>Old</p>';oldContent.home.intro='<p>Keep my own edit</p>';const upgraded=applyEditorialUpdate(oldContent);assert.ok(upgraded.pages.pr.intro.includes('идеологию самостоятельного бизнеса'));assert.equal(upgraded.home.intro,'<p>Keep my own edit</p>');upgraded.pages.pr.intro='<p>Later edit</p>';assert.equal(applyEditorialUpdate(upgraded).pages.pr.intro,'<p>Later edit</p>');
 const previousRevision=structuredClone(defaults);previousRevision.contentRevision=2;previousRevision.pages.pr.call='Old call';previousRevision.pages.science.intro='<p>Preserve independent editor change</p>';const revision3=applyEditorialUpdate(previousRevision);assert.ok(revision3.pages.pr.call.includes('Точно знаю'));assert.equal(revision3.pages.science.intro,previousRevision.pages.science.intro);
 const diskFs=await import('node:fs/promises');const diskPath=await diskFs.mkdtemp('/tmp/site-sv-disk-');
 try{globalThis.testEnv={};process.env.CONTENT_DIRECTORY=diskPath;assert.equal((await readContent()).version,1);await saveContent(defaults,1);assert.equal((await readContent()).version,2);const results=await Promise.allSettled([saveContent(defaults,2),saveContent(defaults,2)]);assert.equal(results.filter(x=>x.status==='fulfilled').length,1);await diskFs.writeFile(diskPath+'/content.json','invalid json');await assert.rejects(()=>readContent());}finally{delete process.env.CONTENT_DIRECTORY;await diskFs.rm(diskPath,{recursive:true,force:true});}
-console.log('PASS: editor ownership, anonymous access, CSRF, sanitization, schema, durable storage, version conflicts, sessions.');`;
+console.log('PASS: editor ownership, anonymous access, CSRF, sanitization, schema, durable storage, version conflicts, sessions, OIDC cutover.');`;
  await build({stdin:{contents:source,resolveDir:process.cwd(),sourcefile:'security-test.ts',loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:join(dir,'test.mjs'),packages:'external',plugins:[{name:'test-boundaries',setup(b){b.onResolve({filter:/^server-only$/},()=>({path:'empty',namespace:'mock'}));b.onResolve({filter:/^next\/headers$/},()=>({path:'headers',namespace:'mock'}));b.onResolve({filter:/^@opennextjs\/cloudflare$/},()=>({path:'context',namespace:'mock'}));b.onLoad({filter:/.*/,namespace:'mock'},args=>({contents:args.path==='empty'?'':args.path==='headers'?'export async function headers(){return globalThis.testHeaders;} export async function cookies(){return {get:key=>globalThis.testCookies.get(key)}}':'export function getCloudflareContext(){return {env:globalThis.testEnv}}',loader:'js'}));}}]});
  // Locate project dependencies from the temporary bundle.
  const {spawnSync}=await import('node:child_process');

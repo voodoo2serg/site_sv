@@ -16,7 +16,7 @@
 | Редактор | TipTap 3: заголовки, абзацы, выделение, списки, цитаты, ссылки |
 | Обработка текста | Очистка HTML на сервере через sanitize-html |
 | Данные | Один JSON-документ; на VPS — постоянный каталог на диске; в Sites — Cloudflare R2 |
-| Вход в редактор | На VPS — пароль и подписанная HttpOnly cookie; в Sites — вход владельца через ChatGPT |
+| Вход в редактор | На VPS — Keycloak OIDC (PKCE BFF, AUTH-208) + опциональный break-glass; в Sites — вход владельца через ChatGPT |
 | Изображения | Локальные PNG/SVG/WebP, несколько размеров фотографий |
 | Шрифты | Golos Text и Unbounded, локально через Fontsource, лицензии SIL OFL |
 | SEO | Метаданные страниц, canonical, Open Graph, Person/ProfilePage JSON-LD, sitemap.xml, robots.txt |
@@ -53,7 +53,7 @@ npm run start:vps
 ### Через браузер — основной способ
 
 1. Откройте `https://ваш-домен/edit/`.
-2. На VPS введите пароль `EDITOR_PASSWORD`; на текущем закрытом Sites-сайте вход обеспечивает ChatGPT.
+2. На VPS войдите через SIGNAL / Keycloak (`/api/editor-oidc/start`); до cutover или при break-glass — `EDITOR_PASSWORD`. На Sites — ChatGPT. См. [docs/AUTH_208_EDITOR_OIDC.md](docs/AUTH_208_EDITOR_OIDC.md).
 3. Выберите страницу, измените текст и его форматирование. Можно править SEO-поля, почту, подписи логотипов и внешние ссылки.
 4. Нажмите **«Сохранить»**. Страницы обновятся без пересборки и перезапуска.
 5. **«Скачать копию»** выгружает JSON с текущими текстами. **«Загрузить копию»** импортирует его в редактор; для публикации затем нужно нажать «Сохранить».

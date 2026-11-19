@@ -16,6 +16,7 @@
 |---|---|---|---|
 | SITE-102 | P0 | PR #1 подписанный UTM lead.created | No duplicate lead |
 | ANALYTICS-101 | P1 | Umami anonymous page events | No PII and consent-aware |
+| AUTH-208 | P1 | `/edit/` Keycloak OIDC cutover (no EDITOR_PASSWORD bypass) | CODE_READY → MERGED → DEPLOYED → smoke; MFA = AUTH-210 |
 
 ## Исполнительский протокол
 

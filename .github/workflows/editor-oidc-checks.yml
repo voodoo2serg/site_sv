@@ -5,8 +5,30 @@ on:
       - 'lib/editor-oidc.ts'
       - 'lib/auth.ts'
       - 'components/Login.tsx'
+      - 'components/Editor.tsx'
       - 'app/edit/page.tsx'
       - 'app/api/editor-oidc/**'
+      - 'app/api/login/**'
+      - 'app/api/logout/**'
+      - 'scripts/test-security.mjs'
+      - 'scripts/test-editor-oidc.mjs'
+      - '.env.example'
+      - 'docs/AUTH_208_EDITOR_OIDC.md'
+      - '.github/workflows/editor-oidc-checks.yml'
+  pull_request:
+    paths:
+      - 'lib/editor-oidc.ts'
+      - 'lib/auth.ts'
+      - 'components/Login.tsx'
+      - 'components/Editor.tsx'
+      - 'app/edit/page.tsx'
+      - 'app/api/editor-oidc/**'
+      - 'app/api/login/**'
+      - 'app/api/logout/**'
+      - 'scripts/test-security.mjs'
+      - 'scripts/test-editor-oidc.mjs'
+      - '.env.example'
+      - 'docs/AUTH_208_EDITOR_OIDC.md'
       - '.github/workflows/editor-oidc-checks.yml'
   workflow_dispatch:
 permissions:
@@ -24,3 +46,4 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run test
+      - run: npm run test:oidc
