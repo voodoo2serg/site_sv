@@ -1,4 +1,4 @@
-import {isEditor} from '@/lib/auth';
+import {editorLogoutLink,isEditor} from '@/lib/auth';
 import {
   editorOidcBreakGlass,
   editorOidcCutover,
@@ -19,5 +19,5 @@ export default async function Edit(){
       />
     );
   }
-  return <Editor initial={await readContent()}/>;
+  return <Editor initial={await readContent()} logout={await editorLogoutLink()}/>;
 }

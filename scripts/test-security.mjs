@@ -48,8 +48,13 @@ assert.equal(await issueSession(globalThis.testEnv.EDITOR_PASSWORD),null,'cutove
 process.env.EDITOR_OIDC_BREAK_GLASS='1';
 const glass=await issueSession(globalThis.testEnv.EDITOR_PASSWORD);assert.ok(glass,'break-glass re-enables password');
 globalThis.testCookies.set('editor_session',{value:glass});assert.equal(await isEditor(),true);
-delete process.env.EDITOR_OIDC_CUTOVER;delete process.env.EDITOR_OIDC_BREAK_GLASS;
+// P1: cutover alone (OIDC wiped) still blocks password without break-glass.
+delete process.env.EDITOR_OIDC_BREAK_GLASS;
 for (const k of ['EDITOR_OIDC_ISSUER','EDITOR_OIDC_CLIENT_ID','EDITOR_OIDC_REDIRECT_URI','EDITOR_OIDC_OWNER_SUB','EDITOR_OIDC_SESSION_SECRET','SIGNAL_ACCESS_RESOLVE_URL','SIGNAL_ACCESS_SIGNING_KEY']) delete process.env[k];
+process.env.EDITOR_OIDC_CUTOVER='1';
+assert.equal(await issueSession(globalThis.testEnv.EDITOR_PASSWORD),null,'cutover without OIDC still blocks password');
+globalThis.testCookies.set('editor_session',{value:glass});assert.equal(await isEditor(),false);
+delete process.env.EDITOR_OIDC_CUTOVER;
 const oldContent=structuredClone(defaults);delete oldContent.contentRevision;oldContent.pages.pr.intro='<p>Old</p>';oldContent.home.intro='<p>Keep my own edit</p>';const upgraded=applyEditorialUpdate(oldContent);assert.ok(upgraded.pages.pr.intro.includes('идеологию самостоятельного бизнеса'));assert.equal(upgraded.home.intro,'<p>Keep my own edit</p>');upgraded.pages.pr.intro='<p>Later edit</p>';assert.equal(applyEditorialUpdate(upgraded).pages.pr.intro,'<p>Later edit</p>');
 const previousRevision=structuredClone(defaults);previousRevision.contentRevision=2;previousRevision.pages.pr.call='Old call';previousRevision.pages.science.intro='<p>Preserve independent editor change</p>';const revision3=applyEditorialUpdate(previousRevision);assert.ok(revision3.pages.pr.call.includes('Точно знаю'));assert.equal(revision3.pages.science.intro,previousRevision.pages.science.intro);
 const diskFs=await import('node:fs/promises');const diskPath=await diskFs.mkdtemp('/tmp/site-sv-disk-');

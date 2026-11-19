@@ -44,8 +44,12 @@ function config() {
 
 export function editorOidcEnabled() { return config() !== null; }
 
+/**
+ * Cutover is the env flag alone. A broken/missing OIDC config must not
+ * silently re-enable EDITOR_PASSWORD (Codex P1 on AUTH-208).
+ */
 export function editorOidcCutover() {
-  return editorOidcEnabled() && truthy(process.env.EDITOR_OIDC_CUTOVER);
+  return truthy(process.env.EDITOR_OIDC_CUTOVER);
 }
 
 /** Explicit emergency local password after cutover. Audited; not a silent bypass. */
@@ -55,7 +59,6 @@ export function editorOidcBreakGlass() {
 
 /** Routine EDITOR_PASSWORD login allowed only before cutover (or with break-glass). */
 export function localEditorPasswordAllowed() {
-  if (!editorOidcEnabled()) return true;
   if (!editorOidcCutover()) return true;
   return editorOidcBreakGlass();
 }
@@ -70,9 +73,9 @@ export function editorOidcStatus() {
     clientId: enabled ? process.env.EDITOR_OIDC_CLIENT_ID || null : null,
     cutover,
     breakGlass,
-    local_login: !enabled ? 'password-or-sites' : cutover
+    local_login: cutover
       ? (breakGlass ? 'break-glass-audited' : 'disabled')
-      : 'dual-migration',
+      : (enabled ? 'dual-migration' : 'password-or-sites'),
     identity: 'issuer+sub',
     mfa: 'deferred-AUTH-210',
     grant: 'signal-access-resolve',

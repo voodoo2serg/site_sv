@@ -84,9 +84,26 @@ assert.ok(token, 'break-glass can issue password session');
 globalThis.testCookies.set('editor_session', {value: token});
 assert.equal(await isEditor(), true);
 
-// Wrong issuer / incomplete config disables SSO entirely.
+// Wrong issuer / incomplete config disables SSO entirely — cutover must still block password (P1).
 process.env.EDITOR_OIDC_ISSUER = 'https://evil.example/realms/solo-pr';
+delete process.env.EDITOR_OIDC_BREAK_GLASS;
 assert.equal(editorOidcEnabled(), false);
+assert.equal(editorOidcCutover(), true, 'cutover flag independent of OIDC validity');
+assert.equal(localEditorPasswordAllowed(), false, 'invalid OIDC must not re-enable password under cutover');
+assert.equal(await issueSession(process.env.EDITOR_PASSWORD), null);
+globalThis.testCookies.set('editor_session', {value: token});
+assert.equal(await isEditor(), false, 'legacy cookie still rejected when cutover+broken OIDC');
+assert.equal(editorOidcStatus().local_login, 'disabled');
+
+// Break-glass still works with broken OIDC under cutover.
+process.env.EDITOR_OIDC_BREAK_GLASS = '1';
+assert.equal(localEditorPasswordAllowed(), true);
+assert.ok(await issueSession(process.env.EDITOR_PASSWORD));
+
+// Cutover off + no OIDC → password-or-sites again.
+delete process.env.EDITOR_OIDC_CUTOVER;
+delete process.env.EDITOR_OIDC_BREAK_GLASS;
+assert.equal(editorOidcStatus().local_login, 'password-or-sites');
 
 console.log('PASS: editor OIDC cutover, break-glass, end-session allowlist, status contract.');
 `;

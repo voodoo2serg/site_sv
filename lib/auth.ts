@@ -1,6 +1,7 @@
 import 'server-only';
 import {
   editorOidcCutover,
+  editorOidcEnabled,
   localEditorPasswordAllowed,
   validEditorOidcSession,
 } from './editor-oidc';
@@ -12,6 +13,11 @@ async function sign(payload:string,key:string){const cryptoKey=await crypto.subt
 export async function issueSession(password:string){
   if(!localEditorPasswordAllowed())return null;
   const key=await secret();if(!key||key.length<24)return null;const a=await sign(password,key),b=await sign(key,key);if(a!==b)return null;const expiry=String(Date.now()+8*60*60*1000);return expiry+'.'+await sign(expiry,key);
+}
+async function sitesOwnerId(){
+ const h=await headers();const env=await runtime();const id=h.get('oai-authenticated-user-id');
+ if(!env.BUCKET||!id)return null;
+ return id;
 }
 export async function isEditor(claim=false){
  if(await validEditorOidcSession((await cookies()).get('editor_oidc_session')?.value))return true;
@@ -31,6 +37,22 @@ export async function isEditor(claim=false){
  const key=await secret();if(!key||key.length<24)return false;
  const token=(await cookies()).get('editor_session')?.value;if(!token)return false;
  const [expiry,sig]=token.split('.');return Number(expiry)>Date.now()&&sig===await sign(expiry,key);
+}
+/**
+ * Logout control for the editor chrome (Codex P2).
+ * Sites auth is header-based — cookie-only logout is a no-op; use platform sign-out.
+ */
+export async function editorLogoutLink(): Promise<{href:string;target?:'_top'}|null>{
+ if(editorOidcEnabled()||await validEditorOidcSession((await cookies()).get('editor_oidc_session')?.value)){
+  return {href:'/api/editor-oidc/logout'};
+ }
+ if(await sitesOwnerId()){
+  return {href:'/signout',target:'_top'};
+ }
+ if((await cookies()).get('editor_session')?.value){
+  return {href:'/api/editor-oidc/logout'};
+ }
+ return null;
 }
 export function sameOrigin(req:Request){
  const raw=req.headers.get('origin');if(!raw)return false;

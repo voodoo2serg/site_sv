@@ -11,8 +11,8 @@ export default function Login({ssoEnabled=false, cutover=false, breakGlass=false
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const passwordAllowed = !ssoEnabled || !cutover || breakGlass;
-  const showPasswordPrimary = !ssoEnabled;
+  const passwordAllowed = !cutover || breakGlass;
+  const showPasswordPrimary = !ssoEnabled && !cutover;
 
   return (
     <main id="main" className="login-panel">
@@ -29,6 +29,14 @@ export default function Login({ssoEnabled=false, cutover=false, breakGlass=false
           {cutover && !breakGlass && (
             <p>Локальный пароль редактора отключён после перехода на SSO.</p>
           )}
+        </>
+      ) : cutover ? (
+        <>
+          <p>Локальный пароль отключён (cutover). Единый вход SIGNAL ещё не настроен или конфиг неполный — обратитесь к ops / break-glass.</p>
+          <p>В закрытой версии Sites владелец входит через ChatGPT.</p>
+          <a className="ui-button" href="/signin-with-chatgpt?return_to=%2Fedit" target="_top">
+            Войти через ChatGPT ↗
+          </a>
         </>
       ) : (
         <>

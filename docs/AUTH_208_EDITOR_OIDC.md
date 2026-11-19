@@ -12,7 +12,8 @@
 | Public `vodopetov.ru` | Unchanged — no login |
 | ChatGPT Sites owner path | Unchanged (`OWNER_PRIVATE_EDITOR` + `oai-authenticated-user-id`) |
 | VPS `/edit/` with OIDC env complete | PKCE BFF → Keycloak → SIGNAL grant → `editor_oidc_session` |
-| `EDITOR_OIDC_CUTOVER=1` | Local `EDITOR_PASSWORD` / `editor_session` **disabled** (not a hidden bypass) |
+| `EDITOR_OIDC_CUTOVER=1` | Local `EDITOR_PASSWORD` / `editor_session` **disabled** even if OIDC env is broken/incomplete (not a hidden bypass) |
+| Sites ChatGPT logout | «Выйти» uses `/signout` (`target=_top`); cookie-only logout is not shown as a no-op |
 | `EDITOR_OIDC_BREAK_GLASS=1` | Optional audited emergency password after cutover |
 | Stranger / wrong `sub` / no SIGNAL grant | **403** |
 
