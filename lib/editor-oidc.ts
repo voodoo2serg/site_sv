@@ -1,8 +1,22 @@
 import 'server-only';
 
-/** Opt-in editor SSO. Explicit subject + SIGNAL grant required; existing editor password untouched. */
+/**
+ * Editor Keycloak OIDC BFF (AUTH-208).
+ * Identity = verified issuer + sub. Email never grants editor.
+ * Cutover: EDITOR_OIDC_CUTOVER=1 disables routine EDITOR_PASSWORD login.
+ * Break-glass: EDITOR_OIDC_BREAK_GLASS=1 re-enables password with audit only.
+ * MFA deferred to AUTH-210.
+ */
 const EXPECTED_ISSUER = 'https://auth.solo-pr.ru/realms/solo-pr';
 const E = new TextEncoder();
+
+function truthy(value: string | undefined) {
+  return value === '1' || value === 'true';
+}
+
+function allowedSubjects(raw: string) {
+  return [...new Set(raw.split(',').map((s) => s.trim()).filter(Boolean))];
+}
 
 function config() {
   const issuer = process.env.EDITOR_OIDC_ISSUER;
@@ -15,15 +29,65 @@ function config() {
   if (issuer !== EXPECTED_ISSUER || !clientId || !secret || secret.length < 32 ||
       !ownerSub || !redirect || !gate || !gate.startsWith('https://') ||
       !gateKey || gateKey.length < 32) return null;
+  const subjects = allowedSubjects(ownerSub);
+  if (!subjects.length) return null;
   try {
     const url = new URL(redirect);
     if (url.protocol !== 'https:' || url.pathname !== '/api/editor-oidc/callback' ||
-        url.hostname !== 'vodopetov.ru') return null;
-    return {issuer, clientId, secret, ownerSub, redirect, gate, gateKey,
-      clientSecret: process.env.EDITOR_OIDC_CLIENT_SECRET || ''};
+        (url.hostname !== 'vodopetov.ru' && url.hostname !== 'www.vodopetov.ru')) return null;
+    return {
+      issuer, clientId, secret, subjects, redirect, gate, gateKey,
+      clientSecret: process.env.EDITOR_OIDC_CLIENT_SECRET || '',
+    };
   } catch { return null; }
 }
+
 export function editorOidcEnabled() { return config() !== null; }
+
+export function editorOidcCutover() {
+  return editorOidcEnabled() && truthy(process.env.EDITOR_OIDC_CUTOVER);
+}
+
+/** Explicit emergency local password after cutover. Audited; not a silent bypass. */
+export function editorOidcBreakGlass() {
+  return editorOidcCutover() && truthy(process.env.EDITOR_OIDC_BREAK_GLASS);
+}
+
+/** Routine EDITOR_PASSWORD login allowed only before cutover (or with break-glass). */
+export function localEditorPasswordAllowed() {
+  if (!editorOidcEnabled()) return true;
+  if (!editorOidcCutover()) return true;
+  return editorOidcBreakGlass();
+}
+
+export function editorOidcStatus() {
+  const enabled = editorOidcEnabled();
+  const cutover = editorOidcCutover();
+  const breakGlass = editorOidcBreakGlass();
+  return {
+    enabled,
+    issuer: enabled ? EXPECTED_ISSUER : null,
+    clientId: enabled ? process.env.EDITOR_OIDC_CLIENT_ID || null : null,
+    cutover,
+    breakGlass,
+    local_login: !enabled ? 'password-or-sites' : cutover
+      ? (breakGlass ? 'break-glass-audited' : 'disabled')
+      : 'dual-migration',
+    identity: 'issuer+sub',
+    mfa: 'deferred-AUTH-210',
+    grant: 'signal-access-resolve',
+  };
+}
+
+/** Structured audit only — never log passwords, tokens, or secrets. */
+export function auditEditor(event: string, fields: Record<string, unknown> = {}) {
+  console.info(JSON.stringify({
+    ts: new Date().toISOString(),
+    svc: 'site_sv',
+    event,
+    ...fields,
+  }));
+}
 
 function base64(bytes: Uint8Array) { return Buffer.from(bytes).toString('base64url'); }
 function random(n = 32) { return base64(crypto.getRandomValues(new Uint8Array(n))); }
@@ -53,6 +117,7 @@ export async function beginEditorOidc() {
     scope:'openid email profile', state, nonce, code_challenge:challenge,
     code_challenge_method:'S256'
   })) url.searchParams.set(k,v);
+  auditEditor('editor.oidc.begin', {clientId: cfg.clientId});
   return {url: url.toString(), sealed};
 }
 
@@ -127,10 +192,14 @@ export async function completeEditorOidc(code:string,state:string,sealed:string)
   const tokens=await res.json() as {id_token?:string};
   if(!tokens.id_token)throw new Error('Keycloak не вернул id_token');
   const sub=await verifiedIdToken(tokens.id_token,nonce);
-  if(sub!==cfg.ownerSub)throw new Error('Доступ редактора не разрешён этому пользователю');
+  if(!cfg.subjects.includes(sub)){
+    auditEditor('editor.oidc.deny_subject', {reason:'subject-not-allowlisted'});
+    throw new Error('Доступ редактора не разрешён этому пользователю');
+  }
   await verifySignalGrant(cfg,sub);
   const expiry=String(Date.now()+8*3600_000);
   const payload=sub+'.'+expiry;
+  auditEditor('editor.oidc.login', {sub, cutover: editorOidcCutover()});
   return payload+'.'+await sign(cfg.secret,payload);
 }
 
@@ -140,14 +209,31 @@ export async function validEditorOidcSession(session:string|undefined) {
   const parts=session.split('.');
   if(parts.length!==3)return false;
   const [sub,expires,sig]=parts;
-  if(sub!==cfg.ownerSub||!Number.isFinite(Number(expires))||Number(expires)<=Date.now())return false;
+  if(!cfg.subjects.includes(sub)||!Number.isFinite(Number(expires))||Number(expires)<=Date.now())return false;
   if (!(await validSignature(cfg.secret,sub+'.'+expires,sig))) return false;
   // Enforce revocation on every protected editor request, not just at SSO login.
-  // If SIGNAL is unavailable, SSO access fails closed; legacy login stays intact.
+  // If SIGNAL is unavailable, SSO access fails closed.
   try {
     await verifySignalGrant(cfg, sub);
     return true;
   } catch {
     return false;
   }
+}
+
+/** Keycloak end-session URL for confirmed logout (no id_token stored in BFF cookie). */
+export function editorOidcEndSessionUrl(postLogoutRedirect: string) {
+  const cfg = config();
+  if (!cfg) return null;
+  try {
+    const redirect = new URL(postLogoutRedirect);
+    if (redirect.protocol !== 'https:' ||
+        (redirect.hostname !== 'vodopetov.ru' && redirect.hostname !== 'www.vodopetov.ru')) {
+      return null;
+    }
+  } catch { return null; }
+  const url = new URL(cfg.issuer + '/protocol/openid-connect/logout');
+  url.searchParams.set('client_id', cfg.clientId);
+  url.searchParams.set('post_logout_redirect_uri', postLogoutRedirect);
+  return url.toString();
 }

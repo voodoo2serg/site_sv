@@ -9,4 +9,5 @@ dist/
 *.tsbuildinfo
 
 .security-test-*/
+.oidc-test-*/
 *.tmp
