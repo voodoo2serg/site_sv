@@ -33,7 +33,9 @@ function config() {
   if (!subjects.length) return null;
   try {
     const url = new URL(redirect);
-    if (url.protocol !== 'https:' || url.pathname !== '/api/editor-oidc/callback' ||
+    // trailingSlash:true may register callback with or without a final slash; both are OK.
+    const path = url.pathname.replace(/\/$/, '') || '/';
+    if (url.protocol !== 'https:' || path !== '/api/editor-oidc/callback' ||
         (url.hostname !== 'vodopetov.ru' && url.hostname !== 'www.vodopetov.ru')) return null;
     return {
       issuer, clientId, secret, subjects, redirect, gate, gateKey,

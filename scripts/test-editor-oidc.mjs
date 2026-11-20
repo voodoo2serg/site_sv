@@ -38,6 +38,11 @@ function enableOidc() {
   process.env.SIGNAL_ACCESS_SIGNING_KEY = 'y'.repeat(32);
 }
 
+function enableOidcTrailingCallback() {
+  enableOidc();
+  process.env.EDITOR_OIDC_REDIRECT_URI = 'https://vodopetov.ru/api/editor-oidc/callback/';
+}
+
 globalThis.testEnv = {};
 globalThis.testHeaders = new Headers();
 globalThis.testCookies = new Map();
@@ -57,6 +62,10 @@ assert.equal(localEditorPasswordAllowed(), true);
 assert.equal(editorOidcStatus().local_login, 'dual-migration');
 assert.equal(editorOidcStatus().identity, 'issuer+sub');
 assert.equal(editorOidcStatus().mfa, 'deferred-AUTH-210');
+
+enableOidcTrailingCallback();
+assert.equal(editorOidcEnabled(), true, 'redirect_uri with trailing slash still enables SSO');
+enableOidc();
 
 const end = editorOidcEndSessionUrl('https://vodopetov.ru/edit/');
 assert.ok(end.includes('/protocol/openid-connect/logout'));

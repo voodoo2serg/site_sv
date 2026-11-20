@@ -49,17 +49,26 @@ Owner `sub` from AUTH-202 inventory (do not paste into chat/docs beyond ops runb
 ## Smoke
 
 ```bash
-curl -sS https://vodopetov.ru/api/editor-oidc/status
+curl -sS https://vodopetov.ru/api/editor-oidc/status/
 # → enabled:true, cutover:true|false, local_login:…
 
-curl -sSI https://vodopetov.ru/api/editor-oidc/start | head
+# Prefer POST (login form). GET remains for curl smoke.
+curl -sSI -X POST https://vodopetov.ru/api/editor-oidc/start/ \
+  -H 'Origin: https://vodopetov.ru' | head
 # → 302 Location: …/realms/solo-pr/protocol/openid-connect/auth?...code_challenge_method=S256
+# → Set-Cookie: editor_oidc_state=…; Path=/; HttpOnly; Secure; SameSite=Lax
 
 # Public site still open
 curl -sSI https://vodopetov.ru/ | head -1
 ```
 
-Browser: owner with active KC session opens `/edit/` → SSO without a new site password. Customer account → 403. After cutover, old `EDITOR_PASSWORD` returns 403 on `/api/login`.
+Browser: owner with active KC session opens `/edit/` → **«Войти через SIGNAL»** (POST) → IdP → `/edit/` editor. Failed PKCE/state redirects back to `/edit/?error=sso_state|sso_denied` (not raw JSON). Customer account / no SIGNAL grant → denied. After cutover, old `EDITOR_PASSWORD` returns 403 on `/api/login`.
+
+### AUTH-210 reliability notes
+
+- `skipTrailingSlashRedirect` so Keycloak’s exact `redirect_uri` (no trailing slash) hits the callback handler without a 308 hop.
+- PKCE state cookie uses `Path=/` (legacy `Path=/api/editor-oidc` cleared on write).
+- Login CTA is **POST** `/api/editor-oidc/start/` so prefetch cannot overwrite the in-flight state cookie.
 
 ## Logout / revoke
 
