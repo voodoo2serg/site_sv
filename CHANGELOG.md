@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- **AUTH-210** `/edit/` browser SSO reliability: POST SIGNAL CTA (no GET prefetch race), PKCE state cookie `Path=/`, `skipTrailingSlashRedirect` so IdP callback hits the handler without 308, friendly `/edit/?error=…` instead of raw JSON on failure.
+
 ### Added
 
 - **AUTH-208** `/edit/` Keycloak OIDC cutover: PKCE BFF status/logout, `EDITOR_OIDC_CUTOVER` disables password bypass, optional audited break-glass, SIGNAL grant on every editor request, ChatGPT Sites path unchanged. Docs: `docs/AUTH_208_EDITOR_OIDC.md`.

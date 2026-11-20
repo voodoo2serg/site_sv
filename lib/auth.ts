@@ -44,13 +44,13 @@ export async function isEditor(claim=false){
  */
 export async function editorLogoutLink(): Promise<{href:string;target?:'_top'}|null>{
  if(editorOidcEnabled()||await validEditorOidcSession((await cookies()).get('editor_oidc_session')?.value)){
-  return {href:'/api/editor-oidc/logout'};
+  return {href:'/api/editor-oidc/logout/'};
  }
  if(await sitesOwnerId()){
   return {href:'/signout',target:'_top'};
  }
  if((await cookies()).get('editor_session')?.value){
-  return {href:'/api/editor-oidc/logout'};
+  return {href:'/api/editor-oidc/logout/'};
  }
  return null;
 }

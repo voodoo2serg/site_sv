@@ -5,14 +5,28 @@ type Props = {
   ssoEnabled?: boolean;
   cutover?: boolean;
   breakGlass?: boolean;
+  ssoError?: string | null;
 };
 
-export default function Login({ssoEnabled=false, cutover=false, breakGlass=false}: Props) {
+const SSO_ERRORS: Record<string, string> = {
+  sso_state:
+    'Сессия входа истекла или была прервана. Нажмите «Войти через SIGNAL» ещё раз.',
+  sso_denied: 'Вход не подтверждён или нет доступа к редактору.',
+  sso_config: 'Единый вход редактора пока не настроен. Обратитесь к ops.',
+};
+
+export default function Login({
+  ssoEnabled = false,
+  cutover = false,
+  breakGlass = false,
+  ssoError = null,
+}: Props) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const passwordAllowed = !cutover || breakGlass;
   const showPasswordPrimary = !ssoEnabled && !cutover;
+  const ssoMessage = ssoError ? SSO_ERRORS[ssoError] || 'Не удалось завершить вход. Повторите попытку.' : '';
 
   return (
     <main id="main" className="login-panel">
@@ -21,11 +35,13 @@ export default function Login({ssoEnabled=false, cutover=false, breakGlass=false
       {ssoEnabled ? (
         <>
           <p>Вход через единый аккаунт SIGNAL (Keycloak). Публичный сайт остаётся без логина.</p>
-          <p>
-            <a className="ui-button primary" href="/api/editor-oidc/start">
+          {ssoMessage && <p role="alert">{ssoMessage}</p>}
+          {/* POST avoids browser/Next prefetch of GET /start overwriting the PKCE state cookie. */}
+          <form method="POST" action="/api/editor-oidc/start/">
+            <button type="submit" className="ui-button primary">
               Войти через SIGNAL
-            </a>
-          </p>
+            </button>
+          </form>
           {cutover && !breakGlass && (
             <p>Локальный пароль редактора отключён после перехода на SSO.</p>
           )}

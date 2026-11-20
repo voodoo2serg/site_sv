@@ -1,13 +1,23 @@
 import {NextResponse} from 'next/server';
-import {auditEditor,editorOidcEndSessionUrl,editorOidcEnabled} from '@/lib/editor-oidc';
+import {auditEditor, editorOidcEndSessionUrl, editorOidcEnabled} from '@/lib/editor-oidc';
+import {
+  clearEditorOidcSessionCookie,
+  clearEditorOidcStateCookie,
+} from '@/lib/editor-oidc-cookies';
 import {SITE_URL} from '@/lib/content';
 
 export const dynamic = 'force-dynamic';
 
 function clear(response: NextResponse) {
-  response.cookies.set('editor_oidc_session','',{httpOnly:true,secure:true,sameSite:'lax',maxAge:0,path:'/'});
-  response.cookies.set('editor_session','',{httpOnly:true,secure:true,sameSite:'strict',maxAge:0,path:'/'});
-  response.cookies.set('editor_oidc_state','',{httpOnly:true,secure:true,sameSite:'lax',maxAge:0,path:'/api/editor-oidc'});
+  clearEditorOidcSessionCookie(response);
+  clearEditorOidcStateCookie(response);
+  response.cookies.set('editor_session', '', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    maxAge: 0,
+    path: '/',
+  });
 }
 
 /** Confirmed logout: drop local editor cookies, then Keycloak end-session when SSO is on. */

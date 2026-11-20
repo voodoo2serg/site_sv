@@ -1,12 +1,16 @@
 import {NextResponse} from 'next/server';
 import {sameOrigin} from '@/lib/auth';
 import {auditEditor,editorOidcEndSessionUrl} from '@/lib/editor-oidc';
+import {
+  clearEditorOidcSessionCookie,
+  clearEditorOidcStateCookie,
+} from '@/lib/editor-oidc-cookies';
 import {SITE_URL} from '@/lib/content';
 
 function clearEditorCookies(response:NextResponse){
  response.cookies.set('editor_session','',{httpOnly:true,secure:true,sameSite:'strict',maxAge:0,path:'/'});
- response.cookies.set('editor_oidc_session','',{httpOnly:true,secure:true,sameSite:'lax',maxAge:0,path:'/'});
- response.cookies.set('editor_oidc_state','',{httpOnly:true,secure:true,sameSite:'lax',maxAge:0,path:'/api/editor-oidc'});
+ clearEditorOidcSessionCookie(response);
+ clearEditorOidcStateCookie(response);
 }
 
 export async function POST(req:Request){

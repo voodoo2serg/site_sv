@@ -124,7 +124,7 @@ sudo systemctl start site-sv
 
 - HTTPS работает; `/`, `/pr/`, `/digital/`, `/science/`, `/interests/`, `/about/`, `/biography/` открываются.
 - `/edit/` без входа показывает форму (SSO и/или пароль), а `/api/content/` возвращает 401.
-- При OIDC: `GET /api/editor-oidc/status` → `enabled`, `GET /api/editor-oidc/start` → 302 на Keycloak.
+- При OIDC: `GET /api/editor-oidc/status/` → `enabled`, `POST` (или GET) `/api/editor-oidc/start/` → 302 на Keycloak; state cookie `Path=/`.
 - Правка и форматирование сохраняются; после перезапуска текст не теряется.
 - `robots.txt` и `sitemap.xml` содержат ваш домен, в исходном HTML правильный canonical.
 - Все фотографии, логотипы и локальные шрифты загружаются.
